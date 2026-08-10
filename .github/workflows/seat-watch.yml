@@ -18,6 +18,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/state.sqlite3
+          key: seat-state-${{ github.repository }}-${{ github.run_id }}
+          restore-keys: |
+            seat-state-${{ github.repository }}-
       - run: python -m app.check_once
         env:
           GH_TOKEN: ${{ github.token }}

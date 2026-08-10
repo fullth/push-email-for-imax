@@ -1,5 +1,7 @@
 import os
 import re
+from collections import defaultdict
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 
 import requests
@@ -118,7 +120,7 @@ def _subscriptions() -> list[dict]:
 
 def main() -> None:
     state = StateStore(os.getenv("CGV_STATE_PATH", "/tmp/state.sqlite3"))
-    screenings = []
+    pending: list[tuple[str, Screening]] = []
     for subscription in _subscriptions():
         if not subscription["email"] or not subscription["movie"]:
             continue
@@ -151,12 +153,19 @@ def main() -> None:
                     source_key=f"{subscription['issue']}|{item['scnsNo']}|{item['scnSseq']}|{','.join(matches)}",
                     seats=seats, booking_url="https://cgv.co.kr/cnm/movieBook/movie",
                 )
-                screenings.append(screening)
+                pending.append((subscription["email"], screening))
+    screenings = [screening for _, screening in pending]
     new = state.unseen(screenings)
     state.save(screenings)
     if new:
         settings = Settings.from_env()
-        send_screenings(settings, new)
+        new_keys = {screening.key for screening in new}
+        recipients: dict[str, list[Screening]] = defaultdict(list)
+        for email, screening in pending:
+            if screening.key in new_keys:
+                recipients[email].append(screening)
+        for email, recipient_screenings in recipients.items():
+            send_screenings(replace(settings, mail_to=email), recipient_screenings)
 
 
 if __name__ == "__main__":
