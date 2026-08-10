@@ -16,6 +16,20 @@ def _seat_class(seat: Seat) -> str:
     }.get(seat.status, "seat unknown")
 
 
+def _seat_style(status: str) -> str:
+    colors = {
+        "available": ("#2196f3", "#ffffff"),
+        "occupied": ("#3b3b3b", "#ffffff"),
+        "blocked": ("#9ca3af", "#ffffff"),
+        "unknown": ("#f59e0b", "#ffffff"),
+    }
+    background, color = colors.get(status, colors["unknown"])
+    return (
+        f"background-color:{background};color:{color};width:18px;height:18px;"
+        "padding:0;text-align:center;border-radius:3px;font-size:9px;line-height:18px"
+    )
+
+
 def _seat_map_html(seats: tuple[Seat, ...]) -> str:
     if not seats:
         return ""
@@ -30,21 +44,27 @@ def _seat_map_html(seats: tuple[Seat, ...]) -> str:
         for x in range(max_x):
             seat = positions.get((y, x))
             if seat is None:
-                cells.append('<td class="seat-gap" aria-hidden="true"></td>')
+                cells.append('<td style="width:18px;height:18px;padding:0" aria-hidden="true"></td>')
                 continue
             cells.append(
-                f'<td class="{_seat_class(seat)}" title="{escape(seat.label)} '
+                f'<td style="{_seat_style(seat.status)}" title="{escape(seat.label)} '
                 f'({escape(seat.kind)})">{escape(str(seat.number))}</td>'
             )
-        body.append(f'<tr><th class="seat-axis" scope="row"></th>{"".join(cells)}</tr>')
+        body.append(f'<tr><th style="width:4px;padding:2px 4px" scope="row"></th>{"".join(cells)}</tr>')
     return (
-        '<div class="seat-map-wrap"><div class="screen-label">SCREEN</div>'
-        '<table class="seat-map"><caption>좌석 배치도</caption><tbody>'
+        '<div style="overflow-x:auto"><div style="margin:8px auto 12px;max-width:440px;'
+        'padding:5px;text-align:center;background-color:#111;color:#fff;border-radius:3px;'
+        'font-size:11px;letter-spacing:2px">SCREEN</div>'
+        '<table style="border-collapse:separate;border-spacing:2px;margin:0 auto 12px">'
+        '<caption style="text-align:left;font-weight:bold;margin-bottom:6px">좌석 배치도</caption><tbody>'
         + "".join(body)
-        + '</tbody></table><p class="legend">'
-        '<span class="legend-item"><i class="available"></i>예매 가능</span>'
-        '<span class="legend-item"><i class="occupied"></i>예매됨</span>'
-        '<span class="legend-item"><i class="blocked"></i>선택 불가</span>'
+        + '</tbody></table><p style="font-size:12px">'
+        '<span style="display:inline-block;margin-right:12px"><i style="display:inline-block;width:12px;'
+        'height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px;background-color:#2196f3"></i>예매 가능</span>'
+        '<span style="display:inline-block;margin-right:12px"><i style="display:inline-block;width:12px;'
+        'height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px;background-color:#3b3b3b"></i>예매됨</span>'
+        '<span style="display:inline-block"><i style="display:inline-block;width:12px;height:12px;'
+        'border-radius:3px;vertical-align:-2px;margin-right:4px;background-color:#9ca3af"></i>선택 불가</span>'
         "</p></div>"
     )
 
