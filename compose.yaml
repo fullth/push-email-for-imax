@@ -1,0 +1,10 @@
+services:
+  cgv-open-push-email:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - cgv-state:/data
+
+volumes:
+  cgv-state:

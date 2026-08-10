@@ -1,0 +1,1 @@
+"""Personal CGV email notifier."""
