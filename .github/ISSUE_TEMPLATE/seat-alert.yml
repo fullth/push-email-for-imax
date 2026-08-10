@@ -34,12 +34,12 @@ body:
     validations:
       required: true
   - type: input
-    id: min_row
+    id: row_range
     attributes:
-      label: 최소 관심 행
-      description: 이 행부터 뒤쪽 행까지 알림을 받습니다. 예: G를 입력하면 G열부터 알림
-      placeholder: G
-      value: G
+      label: 관심 행 범위
+      description: 시작 행과 끝 행을 입력하세요. 예: G-P를 입력하면 G열부터 P열까지 알림
+      placeholder: G-P
+      value: G-P
     validations:
       required: true
   - type: input

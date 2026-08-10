@@ -27,15 +27,16 @@ jobs:
           movie="$(extract '영화')"
           theater="$(extract '극장')"
           screen="$(extract '상영관')"
-          min_row="$(extract '최소 관심 행')"
+          row_range="$(extract '관심 행 범위')"
+          test -n "$row_range" || row_range="$(extract '최소 관심 행')"
           consecutive="$(extract '필요한 연석 수')"
           schedule="$(extract '대상 회차')"
           for value in "$email" "$movie" "$theater" "$screen" "$min_row" "$consecutive" "$schedule"; do
             test -n "$value" || { echo '필수 항목이 비어 있습니다.' >&2; exit 1; }
           done
-          case "$min_row" in
-            [A-Z]) ;;
-            *) echo '최소 관심 행은 A-Z 한 글자여야 합니다.' >&2; exit 1 ;;
+          case "$row_range" in
+            [A-Z]|[A-Z]-[A-Z]) ;;
+            *) echo '관심 행 범위는 G 또는 G-P 형식이어야 합니다.' >&2; exit 1 ;;
           esac
           case "$consecutive" in
             ''|*[!0-9]*) echo '연석 수는 숫자여야 합니다.' >&2; exit 1 ;;
@@ -45,7 +46,7 @@ jobs:
             echo "movie=$movie"
             echo "theater=$theater"
             echo "screen=$screen"
-            echo "min_row=$min_row"
+            echo "row_range=$row_range"
             echo "consecutive=$consecutive"
             echo "schedule=$schedule"
           } >> "$GITHUB_OUTPUT"
@@ -58,7 +59,7 @@ jobs:
           MOVIE: ${{ steps.fields.outputs.movie }}
           THEATER: ${{ steps.fields.outputs.theater }}
           SCREEN: ${{ steps.fields.outputs.screen }}
-          MIN_ROW: ${{ steps.fields.outputs.min_row }}
+          ROW_RANGE: ${{ steps.fields.outputs.row_range }}
           CONSECUTIVE: ${{ steps.fields.outputs.consecutive }}
           SCHEDULE: ${{ steps.fields.outputs.schedule }}
         run: |
@@ -68,7 +69,7 @@ jobs:
           - 영화: $MOVIE
           - 극장: $THEATER / $SCREEN
           - 대상 회차: $SCHEDULE
-          - 최소 관심 행: $MIN_ROW열부터
+          - 관심 행 범위: $ROW_RANGE열
           - 필요한 연석: ${CONSECUTIVE}석
           - 수신 이메일: $EMAIL
 

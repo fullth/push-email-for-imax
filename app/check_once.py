@@ -21,6 +21,12 @@ def _field(body: str, name: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def _row_range(body: str) -> tuple[str, str]:
+    raw = _field(body, "관심 행 범위") or _field(body, "최소 관심 행")
+    values = [value.strip().upper() for value in re.split(r"[-~]", raw) if value.strip()]
+    return (values[0], values[-1] if len(values) > 1 else values[0]) if values else ("A", "Z")
+
+
 def _get(path: str, params: dict[str, str]) -> dict:
     response = requests.get(
         f"{CGV_BASE}{path}",
@@ -76,10 +82,10 @@ def _dates(schedule: str) -> list[str]:
     return [(today + timedelta(days=i)).isoformat() for i in range(14) if (today + timedelta(days=i)).weekday() >= 5]
 
 
-def _matching_seats(seats, minimum_row: str, consecutive: int) -> list[str]:
+def _matching_seats(seats, minimum_row: str, maximum_row: str, consecutive: int) -> list[str]:
     rows: dict[str, list[int]] = {}
     for seat in seats:
-        if seat.status != "available" or seat.row < minimum_row:
+        if seat.status != "available" or seat.row < minimum_row or seat.row > maximum_row:
             continue
         rows.setdefault(seat.row, []).append(seat.number)
     matches = []
@@ -105,13 +111,15 @@ def _subscriptions() -> list[dict]:
     subscriptions = []
     for issue in response.json():
         body = issue.get("body") or ""
+        minimum_row, maximum_row = _row_range(body)
         subscriptions.append({
             "issue": issue["number"],
             "email": _field(body, "수신 이메일"),
             "movie": _field(body, "영화"),
             "theater": _field(body, "극장"),
             "screen": _field(body, "상영관"),
-            "min_row": _field(body, "최소 관심 행").upper(),
+            "min_row": minimum_row,
+            "max_row": maximum_row,
             "consecutive": int(_field(body, "필요한 연석 수") or "1"),
             "schedule": _field(body, "대상 회차"),
         })
@@ -144,7 +152,7 @@ def main() -> None:
                     "scnSseq": item["scnSseq"], "movNo": item["movNo"], "prodNo": item["prodNo"], "custNo": "",
                 })
                 seats = parse_current_seats(seat_payload)
-                matches = _matching_seats(seats, subscription["min_row"], subscription["consecutive"])
+                matches = _matching_seats(seats, subscription["min_row"], subscription["max_row"], subscription["consecutive"])
                 if not matches:
                     continue
                 screening = Screening(
