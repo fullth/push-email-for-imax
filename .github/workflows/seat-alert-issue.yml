@@ -31,7 +31,7 @@ jobs:
           test -n "$row_range" || row_range="$(extract '최소 관심 행')"
           consecutive="$(extract '필요한 연석 수')"
           schedule="$(extract '대상 회차')"
-          for value in "$email" "$movie" "$theater" "$screen" "$min_row" "$consecutive" "$schedule"; do
+          for value in "$email" "$movie" "$theater" "$screen" "$row_range" "$consecutive" "$schedule"; do
             test -n "$value" || { echo '필수 항목이 비어 있습니다.' >&2; exit 1; }
           done
           case "$row_range" in
