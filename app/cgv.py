@@ -5,9 +5,34 @@ from typing import Any
 
 import requests
 
-from .models import Screening
+from .models import Screening, Seat
 
 LOGGER = logging.getLogger(__name__)
+
+
+def parse_current_seats(payload: dict[str, Any]) -> tuple[Seat, ...]:
+    """Convert CGV's current searchIfSeatData response to mail-ready seats."""
+    data = payload.get("data") if isinstance(payload, dict) else None
+    items = data.get("items", []) if isinstance(data, dict) else []
+    seats: list[Seat] = []
+    for item in items:
+        for raw in item.get("seats", []):
+            status_code = str(raw.get("seatStusCd", ""))
+            # CGV uses seatStusCd=01 for a seat that exists, not an available seat.
+            # The actual selectable state is seatSaleYn=Y; status 00 + N is not selectable.
+            status = "available" if raw.get("seatSaleYn") == "Y" else "occupied" if status_code == "01" else "blocked"
+            seats.append(
+                Seat(
+                    row=str(raw.get("seatRowNm", "?")),
+                    number=int(raw.get("seatNo", 0)),
+                    status=status,
+                    x=int(raw.get("xcoordStartVal", 0)),
+                    y=int(raw.get("ycoordStartVal", 0)),
+                    kind=str(raw.get("stkndExpoNm", "일반석")),
+                    zone=str(raw.get("szoneExpoNm", "")),
+                )
+            )
+    return tuple(seats)
 
 
 def _text(element: ET.Element, names: tuple[str, ...]) -> str:

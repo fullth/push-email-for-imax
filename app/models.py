@@ -1,4 +1,21 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+
+@dataclass(frozen=True)
+class Seat:
+    """A seat returned by the CGV seat-map API."""
+
+    row: str
+    number: int
+    status: str
+    x: int = 0
+    y: int = 0
+    kind: str = "일반석"
+    zone: str = ""
+
+    @property
+    def label(self) -> str:
+        return f"{self.row}{self.number}"
 
 
 @dataclass(frozen=True)
@@ -9,6 +26,8 @@ class Screening:
     date: str
     time: str
     source_key: str
+    seats: tuple[Seat, ...] = field(default_factory=tuple)
+    booking_url: str = ""
 
     @property
     def key(self) -> str:

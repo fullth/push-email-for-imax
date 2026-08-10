@@ -1,0 +1,68 @@
+name: 좌석 알림 신청
+description: 영화와 좌석 조건을 등록합니다.
+title: "[좌석 알림] "
+labels:
+  - seat-alert
+body:
+  - type: input
+    id: email
+    attributes:
+      label: 수신 이메일
+      description: 알림을 받을 이메일 주소를 입력하세요.
+      placeholder: name@example.com
+    validations:
+      required: true
+  - type: input
+    id: movie
+    attributes:
+      label: 영화
+      placeholder: 오디세이
+    validations:
+      required: true
+  - type: input
+    id: theater
+    attributes:
+      label: 극장
+      placeholder: 용산아이파크몰
+    validations:
+      required: true
+  - type: input
+    id: screen
+    attributes:
+      label: 상영관
+      placeholder: IMAX
+    validations:
+      required: true
+  - type: input
+    id: min_row
+    attributes:
+      label: 최소 관심 행
+      description: 이 행부터 뒤쪽 행까지 알림을 받습니다. 예: G를 입력하면 G열부터 알림
+      placeholder: G
+      value: G
+    validations:
+      required: true
+  - type: input
+    id: consecutive_seats
+    attributes:
+      label: 필요한 연석 수
+      description: 연속으로 비어 있어야 하는 좌석 수입니다.
+      placeholder: "2"
+      value: "2"
+    validations:
+      required: true
+  - type: textarea
+    id: schedule
+    attributes:
+      label: 대상 회차
+      description: 날짜와 시간을 입력하세요. 예: 2026-08-15 18:00 또는 주말 전체
+      placeholder: 2026-08-15 18:00
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: 확인
+      options:
+        - label: 좌석 상태가 바뀌면 반복 알림을 받을 수 있음을 확인했습니다.
+          required: true

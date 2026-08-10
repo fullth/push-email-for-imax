@@ -1,0 +1,77 @@
+name: Register seat alert issue
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  register:
+    if: contains(github.event.issue.labels.*.name, 'seat-alert')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse issue form
+        id: fields
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          extract() {
+            printf '%s\n' "$ISSUE_BODY" | awk -v heading="### $1" '
+              $0 == heading { found=1; next }
+              found && NF { print; exit }
+            '
+          }
+          email="$(extract '수신 이메일')"
+          movie="$(extract '영화')"
+          theater="$(extract '극장')"
+          screen="$(extract '상영관')"
+          min_row="$(extract '최소 관심 행')"
+          consecutive="$(extract '필요한 연석 수')"
+          schedule="$(extract '대상 회차')"
+          for value in "$email" "$movie" "$theater" "$screen" "$min_row" "$consecutive" "$schedule"; do
+            test -n "$value" || { echo '필수 항목이 비어 있습니다.' >&2; exit 1; }
+          done
+          case "$min_row" in
+            [A-Z]) ;;
+            *) echo '최소 관심 행은 A-Z 한 글자여야 합니다.' >&2; exit 1 ;;
+          esac
+          case "$consecutive" in
+            ''|*[!0-9]*) echo '연석 수는 숫자여야 합니다.' >&2; exit 1 ;;
+          esac
+          {
+            echo "email=$email"
+            echo "movie=$movie"
+            echo "theater=$theater"
+            echo "screen=$screen"
+            echo "min_row=$min_row"
+            echo "consecutive=$consecutive"
+            echo "schedule=$schedule"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Confirm registration
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          EMAIL: ${{ steps.fields.outputs.email }}
+          MOVIE: ${{ steps.fields.outputs.movie }}
+          THEATER: ${{ steps.fields.outputs.theater }}
+          SCREEN: ${{ steps.fields.outputs.screen }}
+          MIN_ROW: ${{ steps.fields.outputs.min_row }}
+          CONSECUTIVE: ${{ steps.fields.outputs.consecutive }}
+          SCHEDULE: ${{ steps.fields.outputs.schedule }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$(cat <<EOF
+          좌석 알림 신청이 등록되었습니다.
+
+          - 영화: $MOVIE
+          - 극장: $THEATER / $SCREEN
+          - 대상 회차: $SCHEDULE
+          - 최소 관심 행: $MIN_ROW열부터
+          - 필요한 연석: ${CONSECUTIVE}석
+          - 수신 이메일: $EMAIL
+
+          좌석 조회 워커가 다음 주기에 이 조건을 확인합니다.
+          EOF
+          )"
