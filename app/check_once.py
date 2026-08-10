@@ -20,7 +20,17 @@ def _field(body: str, name: str) -> str:
 
 
 def _get(path: str, params: dict[str, str]) -> dict:
-    response = requests.get(f"{CGV_BASE}{path}", params=params, headers={"Accept": "application/json"}, timeout=20)
+    response = requests.get(
+        f"{CGV_BASE}{path}",
+        params=params,
+        headers={
+            "Accept": "application/json",
+            "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Referer": "https://cgv.co.kr/cnm/movieBook/movie",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151.0.0.0 Safari/537.36",
+        },
+        timeout=20,
+    )
     response.raise_for_status()
     payload = response.json()
     if payload.get("statusCode") not in (0, "0", None):
