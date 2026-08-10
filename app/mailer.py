@@ -24,10 +24,7 @@ def _seat_style(status: str) -> str:
         "unknown": ("#f59e0b", "#ffffff"),
     }
     background, color = colors.get(status, colors["unknown"])
-    return (
-        f"background-color:{background};color:{color};width:18px;height:18px;"
-        "padding:0;text-align:center;border-radius:3px;font-size:9px;line-height:18px"
-    )
+    return f"background:{background};color:{color};width:18px;height:18px;padding:0;text-align:center;font-size:9px"
 
 
 def _seat_map_html(seats: tuple[Seat, ...]) -> str:
@@ -47,8 +44,7 @@ def _seat_map_html(seats: tuple[Seat, ...]) -> str:
                 cells.append('<td style="width:18px;height:18px;padding:0" aria-hidden="true"></td>')
                 continue
             cells.append(
-                f'<td style="{_seat_style(seat.status)}" title="{escape(seat.label)} '
-                f'({escape(seat.kind)})">{escape(str(seat.number))}</td>'
+                f'<td style="{_seat_style(seat.status)}">{escape(str(seat.number))}</td>'
             )
         body.append(f'<tr><th style="width:4px;padding:2px 4px" scope="row"></th>{"".join(cells)}</tr>')
     return (
@@ -85,18 +81,8 @@ def _html_body(screenings: list[Screening]) -> str:
                 else ""
             ) + f"{_seat_map_html(item.seats)}</section>"
         )
-    return """<!doctype html><html><body style="font-family:Arial,sans-serif;color:#222">
-<h1>새로운 CGV 상영 일정</h1>""" + "".join(cards) + """
-<style>
-.screening{margin:20px 0;padding:16px;border:1px solid #ddd;border-radius:10px}
-.seat-map-wrap{overflow-x:auto}.screen-label{margin:8px auto 12px;max-width:440px;padding:5px;text-align:center;background:#111;color:#fff;border-radius:3px;font-size:11px;letter-spacing:2px}.seat-map{border-collapse:separate;border-spacing:2px;margin:0 auto 12px}
-.seat-map caption{text-align:left;font-weight:bold;margin-bottom:6px}.seat-map th{padding:2px 4px}.seat-axis{width:4px}
-.seat{width:28px;height:28px;text-align:center;border-radius:5px;font-size:11px}
-.seat-gap{width:10px;height:10px;padding:0}
-.available{background:#4caf50;color:#fff}.occupied{background:#e5e7eb;color:#9ca3af}
-.blocked{background:#374151;color:#fff}.unknown{background:#f59e0b;color:#fff}
-.legend{font-size:12px}.legend-item{margin-right:12px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
-</style></body></html>"""
+    return '<!doctype html><html><body style="font-family:Arial,sans-serif;color:#222">' \
+        '<h1>새로운 CGV 상영 일정</h1>' + "".join(cards) + '</body></html>'
 
 
 def send_screenings(settings: Settings, screenings: list[Screening]) -> None:
