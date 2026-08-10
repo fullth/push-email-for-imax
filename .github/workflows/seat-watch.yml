@@ -33,10 +33,10 @@ jobs:
           CGV_HEADERS_JSON: "{}"
           CGV_COOKIES_JSON: "{}"
           CGV_STATE_PATH: /tmp/state.sqlite3
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          SMTP_USE_TLS: ${{ secrets.SMTP_USE_TLS }}
-          MAIL_FROM: ${{ secrets.MAIL_FROM }}
-          MAIL_TO: ${{ secrets.MAIL_TO }}
+          SMTP_USE_TLS: ${{ vars.SMTP_USE_TLS }}
+          MAIL_FROM: ${{ vars.MAIL_FROM }}
+          MAIL_TO: ${{ vars.MAIL_TO }}
