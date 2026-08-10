@@ -37,6 +37,8 @@ GitHub Issues에서 `좌석 알림 신청` 양식을 작성합니다. `최소 �
 
 알림 메일에는 전체 좌석 배치와 조건을 만족하는 좌석을 함께 표시합니다.
 
+GitHub Actions는 10분마다 이슈를 조회합니다. 실제 메일 발송을 활성화하려면 저장소 Secrets에 `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_USE_TLS`, `MAIL_FROM`, `MAIL_TO`를 등록해야 합니다.
+
 ## 라이선스
 
 원본 코드를 포함하는 경우 GNU AGPL-3.0 조건을 따릅니다. 이 저장소의 구현은 개인용으로 작성되며, 원본 저작권과 라이선스 고지를 유지합니다.
