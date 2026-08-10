@@ -66,7 +66,7 @@ def _html_body(screenings: list[Screening]) -> str:
             ) + f"{_seat_map_html(item.seats)}</section>"
         )
     return """<!doctype html><html><body style="font-family:Arial,sans-serif;color:#222">
-<h1>새로운 CGV 상영 일정</h1>{cards}
+<h1>새로운 CGV 상영 일정</h1>""" + "".join(cards) + """
 <style>
 .screening{margin:20px 0;padding:16px;border:1px solid #ddd;border-radius:10px}
 .seat-map-wrap{overflow-x:auto}.screen-label{margin:8px auto 12px;max-width:440px;padding:5px;text-align:center;background:#111;color:#fff;border-radius:3px;font-size:11px;letter-spacing:2px}.seat-map{border-collapse:separate;border-spacing:2px;margin:0 auto 12px}
@@ -76,7 +76,7 @@ def _html_body(screenings: list[Screening]) -> str:
 .available{background:#4caf50;color:#fff}.occupied{background:#e5e7eb;color:#9ca3af}
 .blocked{background:#374151;color:#fff}.unknown{background:#f59e0b;color:#fff}
 .legend{font-size:12px}.legend-item{margin-right:12px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
-</style></body></html>""".format(cards="".join(cards))
+</style></body></html>"""
 
 
 def send_screenings(settings: Settings, screenings: list[Screening]) -> None:
