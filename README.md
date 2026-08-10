@@ -1,5 +1,8 @@
 # CGV Open Push Email
 
+![Uploading image.png…]()
+
+
 개인용 CGV 예매 오픈 알림 서비스입니다. 상영 일정 조회 결과에서 새로 추가된 회차만 SQLite에 기록하고 이메일로 알립니다. 좌석 맵이 함께 조회된 회차는 메일 본문에 예매 가능 좌석을 네모 칸으로 표시합니다.
 
 현재 CGV의 최신 요청 형식은 공개된 `cgv-open-push`의 구형 API와 다르므로, 조회 URL과 요청 JSON은 환경 변수로 주입합니다. 구형 코드의 고정 쿠키와 `verify=False` 설정은 사용하지 않습니다.
