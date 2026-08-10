@@ -1,7 +1,11 @@
 # CGV Open Push Email
 
-![Uploading image.png…]()
+하기 이슈를 참고하여 알람을 신청해주세요!
+첨부된 이미지와 같이 잔여 좌석이 생기면 알람이 발송됩니다.
 
+https://github.com/fullth/push-email-for-imax/issues/6
+
+<img width="1463" height="630" alt="image" src="https://github.com/user-attachments/assets/beedbefe-9f66-4968-b7a9-1fe9d15b165b" />
 
 개인용 CGV 예매 오픈 알림 서비스입니다. 상영 일정 조회 결과에서 새로 추가된 회차만 SQLite에 기록하고 이메일로 알립니다. 좌석 맵이 함께 조회된 회차는 메일 본문에 예매 가능 좌석을 네모 칸으로 표시합니다.
 
