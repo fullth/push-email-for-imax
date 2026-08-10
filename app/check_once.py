@@ -95,8 +95,7 @@ def _subscriptions() -> list[dict]:
 
 
 def main() -> None:
-    settings = Settings.from_env()
-    state = StateStore(settings.state_path)
+    state = StateStore(os.getenv("CGV_STATE_PATH", "/tmp/state.sqlite3"))
     screenings = []
     for subscription in _subscriptions():
         if not subscription["email"] or not subscription["movie"]:
@@ -134,6 +133,7 @@ def main() -> None:
     new = state.unseen(screenings)
     state.save(screenings)
     if new:
+        settings = Settings.from_env()
         send_screenings(settings, new)
 
 
