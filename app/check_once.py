@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 from collections import defaultdict
 from dataclasses import replace
 from datetime import date, datetime, timedelta
@@ -14,6 +15,7 @@ from .state import StateStore
 
 CGV_BASE = "https://cgv.co.kr/api/v1"
 CO_CD = "A420"
+LOGGER = logging.getLogger(__name__)
 
 
 def _field(body: str, name: str) -> str:
@@ -56,12 +58,13 @@ def _dicts(value):
             yield from _dicts(child)
 
 
-def _movie_no(movie: str, attr_cd: str) -> str:
+def _movie_no(movie: str, attr_cd: str) -> str | None:
     data = list(_dicts(_get("/booking/searchAtktTopPostrList", {"coCd": CO_CD, "movNm": movie, "div": "", "attrCd": attr_cd}).get("data")))
     candidates = [item for item in data if item.get("movNo")]
-    match = next((item for item in candidates if item.get("movNm") == movie), candidates[0] if candidates else None)
+    match = next((item for item in candidates if item.get("movNm") == movie), None)
     if not match:
-        raise RuntimeError(f"영화를 찾을 수 없습니다: {movie}")
+        LOGGER.info("upcoming movie is not listed yet: %s", movie)
+        return None
     return str(match["movNo"])
 
 
@@ -133,6 +136,8 @@ def main() -> None:
         if not subscription["email"] or not subscription["movie"]:
             continue
         movie_no = _movie_no(subscription["movie"], "04" if "IMAX" in subscription["screen"].upper() else "")
+        if not movie_no:
+            continue
         site_no = _site_no(subscription["theater"])
         for day in _dates(subscription["schedule"]):
             payload = _get("/booking/searchSchByMov", {
