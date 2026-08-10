@@ -38,17 +38,29 @@ def _get(path: str, params: dict[str, str]) -> dict:
     return payload
 
 
+def _dicts(value):
+    if isinstance(value, dict):
+        yield value
+        for child in value.values():
+            yield from _dicts(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _dicts(child)
+
+
 def _movie_no(movie: str, attr_cd: str) -> str:
-    data = _get("/booking/searchAtktTopPostrList", {"coCd": CO_CD, "movNm": movie, "div": "", "attrCd": attr_cd}).get("data") or []
-    match = next((item for item in data if item.get("movNm") == movie), data[0] if data else None)
+    data = list(_dicts(_get("/booking/searchAtktTopPostrList", {"coCd": CO_CD, "movNm": movie, "div": "", "attrCd": attr_cd}).get("data")))
+    candidates = [item for item in data if item.get("movNo")]
+    match = next((item for item in candidates if item.get("movNm") == movie), candidates[0] if candidates else None)
     if not match:
         raise RuntimeError(f"영화를 찾을 수 없습니다: {movie}")
     return str(match["movNo"])
 
 
 def _site_no(theater: str) -> str:
-    data = _get("/content/site/searchAllRegionAndSite", {"coCd": CO_CD}).get("data") or []
-    match = next((item for item in data if item.get("siteNm") == theater or item.get("siteNm", "").endswith(theater)), None)
+    data = list(_dicts(_get("/content/site/searchAllRegionAndSite", {"coCd": CO_CD}).get("data")))
+    candidates = [item for item in data if item.get("siteNo") and item.get("siteNm")]
+    match = next((item for item in candidates if item.get("siteNm") == theater or item.get("siteNm", "").endswith(theater)), None)
     if not match:
         raise RuntimeError(f"극장을 찾을 수 없습니다: {theater}")
     return str(match["siteNo"])
