@@ -130,9 +130,12 @@ def _subscriptions() -> list[dict]:
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     state = StateStore(os.getenv("CGV_STATE_PATH", "/tmp/state.sqlite3"))
+    subscriptions = _subscriptions()
+    LOGGER.info("checking subscriptions=%d", len(subscriptions))
     pending: list[tuple[str, Screening]] = []
-    for subscription in _subscriptions():
+    for subscription in subscriptions:
         if not subscription["email"] or not subscription["movie"]:
             continue
         movie_no = _movie_no(subscription["movie"], "04" if "IMAX" in subscription["screen"].upper() else "")
@@ -170,6 +173,7 @@ def main() -> None:
     screenings = [screening for _, screening in pending]
     new = state.unseen(screenings)
     state.save(screenings)
+    LOGGER.info("available screenings=%d newly_available=%d", len(screenings), len(new))
     if new:
         settings = Settings.from_env()
         new_keys = {screening.key for screening in new}
