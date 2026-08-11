@@ -172,7 +172,6 @@ def main() -> None:
                 pending.append((subscription["email"], screening))
     screenings = [screening for _, screening in pending]
     new = state.unseen(screenings)
-    state.save(screenings)
     LOGGER.info("available screenings=%d newly_available=%d", len(screenings), len(new))
     if new:
         settings = Settings.from_env()
@@ -183,6 +182,9 @@ def main() -> None:
                 recipients[email].append(screening)
         for email, recipient_screenings in recipients.items():
             send_screenings(replace(settings, mail_to=email), recipient_screenings)
+    # Do not mark seats as notified until every recipient's email succeeds.
+    # A transient SMTP failure must be retried on the next workflow run.
+    state.save(screenings)
 
 
 if __name__ == "__main__":
