@@ -163,10 +163,13 @@ def main() -> None:
                 matches = _matching_seats(seats, subscription["min_row"], subscription["max_row"], subscription["consecutive"])
                 if not matches:
                     continue
+                available_key = ",".join(
+                    sorted(seat.label for seat in seats if seat.status == "available")
+                )
                 screening = Screening(
                     theater=item.get("siteNm", subscription["theater"]), screen=item.get("scnsNm", subscription["screen"]),
                     movie=item.get("expoProdNm", subscription["movie"]), date=item["scnYmd"], time=start,
-                    source_key=f"{subscription['issue']}|{item['scnsNo']}|{item['scnSseq']}|{','.join(matches)}",
+                    source_key=f"{subscription['issue']}|{item['scnsNo']}|{item['scnSseq']}|{available_key}",
                     seats=seats, booking_url="https://cgv.co.kr/cnm/movieBook/movie",
                 )
                 pending.append((subscription["email"], screening))
