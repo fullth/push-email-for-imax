@@ -28,6 +28,7 @@ class Screening:
     source_key: str
     seats: tuple[Seat, ...] = field(default_factory=tuple)
     booking_url: str = ""
+    alert_type: str = "seat"
 
     @property
     def key(self) -> str:

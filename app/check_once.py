@@ -170,6 +170,7 @@ def main() -> None:
                     movie=item.get("expoProdNm", subscription["movie"]), date=item["scnYmd"], time=start,
                     source_key=f"{subscription['issue']}|{item['scnsNo']}|{item['scnSseq']}|{state_key}",
                     seats=seats, booking_url="https://cgv.co.kr/cnm/movieBook/movie",
+                    alert_type="seat" if matches else "schedule",
                 )
                 pending.append((subscription["email"], screening))
     screenings = [screening for _, screening in pending]
@@ -178,11 +179,11 @@ def main() -> None:
     if new:
         settings = Settings.from_env()
         new_keys = {screening.key for screening in new}
-        recipients: dict[str, list[Screening]] = defaultdict(list)
+        recipients: dict[tuple[str, str], list[Screening]] = defaultdict(list)
         for email, screening in pending:
             if screening.key in new_keys:
-                recipients[email].append(screening)
-        for email, recipient_screenings in recipients.items():
+                recipients[(email, screening.alert_type)].append(screening)
+        for (email, _alert_type), recipient_screenings in recipients.items():
             send_screenings(replace(settings, mail_to=email), recipient_screenings)
     # Do not mark seats as notified until every recipient's email succeeds.
     # A transient SMTP failure must be retried on the next workflow run.
