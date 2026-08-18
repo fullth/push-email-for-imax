@@ -29,7 +29,8 @@ jobs:
           screen="$(extract '상영관')"
           row_range="$(extract '관심 행 범위')"
           test -n "$row_range" || row_range="$(extract '최소 관심 행')"
-          consecutive="$(extract '필요한 연석 수')"
+          consecutive="$(extract '필요한 연속 좌석 수')"
+          test -n "$consecutive" || consecutive="$(extract '필요한 연석 수')"
           schedule="$(extract '대상 회차')"
           for value in "$email" "$movie" "$theater" "$screen" "$row_range" "$consecutive" "$schedule"; do
             test -n "$value" || { echo '필수 항목이 비어 있습니다.' >&2; exit 1; }
@@ -40,6 +41,10 @@ jobs:
           esac
           case "$consecutive" in
             ''|*[!0-9]*) echo '연석 수는 숫자여야 합니다.' >&2; exit 1 ;;
+          esac
+          case "$schedule" in
+            주말|평일|전체|주말\ 전체|평일\ 전체) ;;
+            *) echo '대상 회차는 주말, 평일 또는 전체여야 합니다.' >&2; exit 1 ;;
           esac
           {
             echo "email=$email"
@@ -70,7 +75,7 @@ jobs:
           - 극장: $THEATER / $SCREEN
           - 대상 회차: $SCHEDULE
           - 관심 행 범위: $ROW_RANGE열
-          - 필요한 연석: ${CONSECUTIVE}석
+          - 필요한 연속 좌석: ${CONSECUTIVE}석
           - 수신 이메일: $EMAIL
 
           좌석 조회 워커가 다음 주기에 이 조건을 확인합니다.

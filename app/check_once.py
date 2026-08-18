@@ -82,7 +82,15 @@ def _dates(schedule: str) -> list[str]:
     if found:
         return found
     today = date.today()
-    return [(today + timedelta(days=i)).isoformat() for i in range(14) if (today + timedelta(days=i)).weekday() >= 5]
+    if "주말" in schedule:
+        weekdays = {5, 6}
+    elif "평일" in schedule:
+        weekdays = {0, 1, 2, 3, 4}
+    elif schedule.strip() == "전체":
+        weekdays = set(range(7))
+    else:
+        weekdays = {5, 6}
+    return [(today + timedelta(days=i)).isoformat() for i in range(14) if (today + timedelta(days=i)).weekday() in weekdays]
 
 
 def _matching_seats(seats, minimum_row: str, maximum_row: str, consecutive: int) -> list[str]:
@@ -123,7 +131,7 @@ def _subscriptions() -> list[dict]:
             "screen": _field(body, "상영관"),
             "min_row": minimum_row,
             "max_row": maximum_row,
-            "consecutive": int(_field(body, "필요한 연석 수") or "1"),
+            "consecutive": int(_field(body, "필요한 연속 좌석 수") or _field(body, "필요한 연석 수") or "1"),
             "schedule": _field(body, "대상 회차"),
         })
     return subscriptions
