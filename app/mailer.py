@@ -68,22 +68,29 @@ def _seat_map_html(seats: tuple[Seat, ...]) -> str:
 def _html_body(screenings: list[Screening]) -> str:
     cards = []
     for item in screenings:
+        is_schedule = item.alert_type == "schedule"
+        badge = "상영일 오픈" if is_schedule else "빈자리 변경"
+        badge_color = "#2563eb" if is_schedule else "#e50914"
         cards.append(
             '<section class="screening">'
-            f"<h2>{escape(item.movie)}</h2>"
-            f"<p>{escape(item.date)} {escape(item.time)} · "
-            f"{escape(item.theater)} · {escape(item.screen)}</p>"
+            f'<p style="display:inline-block;margin:0 0 8px;padding:4px 8px;'
+            f'background:{badge_color};color:#fff;font-weight:bold;border-radius:4px">{badge}</p>'
+            f'<h2 style="margin:4px 0">{escape(item.movie)}</h2>'
+            f'<p style="font-size:16px;font-weight:bold;margin:8px 0">'
+            f"상영일 {escape(item.date)} {escape(item.time)}</p>"
+            f"<p>{escape(item.theater)} · {escape(item.screen)}</p>"
             + (
                 f'<p><a href="{escape(item.booking_url, quote=True)}" '
                 'style="display:inline-block;padding:9px 14px;background:#e50914;'
                 'color:#fff;text-decoration:none;border-radius:6px">예매 화면 열기</a></p>'
                 if item.booking_url
                 else ""
-            ) + f"{_seat_map_html(item.seats)}</section>"
+            ) + ("" if is_schedule else _seat_map_html(item.seats)) + "</section>"
         )
     title = "새로운 CGV 상영 일정" if screenings[0].alert_type == "schedule" else "CGV 빈 좌석 변경"
+    description = "새로 등록된 상영일입니다." if screenings[0].alert_type == "schedule" else "이전 확인 이후 빈 좌석 구성이 변경되었습니다."
     return '<!doctype html><html><body style="font-family:Arial,sans-serif;color:#222">' \
-        f"<h1>{title}</h1>" + "".join(cards) + '</body></html>'
+        f"<h1>{title}</h1><p>{description}</p>" + "".join(cards) + '</body></html>'
 
 
 def send_screenings(settings: Settings, screenings: list[Screening]) -> None:
@@ -94,12 +101,13 @@ def send_screenings(settings: Settings, screenings: list[Screening]) -> None:
     message["To"] = settings.mail_to
     title = "CGV 상영 오픈" if screenings[0].alert_type == "schedule" else "CGV 좌석 알림"
     message["Subject"] = f"[{title}] {len(screenings)}건"
+    is_schedule = screenings[0].alert_type == "schedule"
     lines = [
-        "새로운 CGV 상영 일정이 등록되었습니다." if screenings[0].alert_type == "schedule" else "CGV 빈 좌석 상태가 변경되었습니다.",
+        "[상영일 오픈] 새 상영일 또는 회차가 등록되었습니다." if is_schedule else "[빈자리 변경] 이전 확인 이후 빈 좌석 구성이 변경되었습니다.",
         "",
     ]
     for item in screenings:
-        lines.append(f"- {item.date} {item.time} | {item.theater} | {item.screen} | {item.movie}")
+        lines.append(f"- 상영일: {item.date} {item.time} | {item.theater} | {item.screen} | {item.movie}")
         if item.booking_url:
             lines.append(f"  예매: {item.booking_url}")
     message.set_content("\n".join(lines))
