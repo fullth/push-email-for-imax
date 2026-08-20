@@ -9,7 +9,7 @@ import requests
 
 from .cgv import parse_current_seats
 from .config import Settings
-from .mailer import send_screenings
+from .mailer import send_ntfy, send_screenings
 from .models import Screening
 from .state import StateStore
 
@@ -192,7 +192,12 @@ def main() -> None:
             if screening.key in new_keys:
                 recipients[(email, screening.alert_type)].append(screening)
         for (email, _alert_type), recipient_screenings in recipients.items():
-            send_screenings(replace(settings, mail_to=email), recipient_screenings)
+            recipient_settings = replace(settings, mail_to=email)
+            send_screenings(recipient_settings, recipient_screenings)
+            try:
+                send_ntfy(recipient_settings, recipient_screenings)
+            except Exception:
+                LOGGER.exception("ntfy notification failed")
     # Do not mark seats as notified until every recipient's email succeeds.
     # A transient SMTP failure must be retried on the next workflow run.
     state.save(screenings)

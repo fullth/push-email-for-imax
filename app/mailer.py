@@ -6,6 +6,8 @@ from html import escape
 from .config import Settings
 from .models import Screening, Seat
 
+import requests
+
 
 def _seat_class(seat: Seat) -> str:
     return {
@@ -118,3 +120,26 @@ def send_screenings(settings: Settings, screenings: list[Screening]) -> None:
             client.starttls()
         client.login(settings.smtp_username, settings.smtp_password)
         client.send_message(message)
+
+
+def send_ntfy(settings: Settings, screenings: list[Screening]) -> None:
+    if not screenings or not settings.ntfy_topic_url:
+        return
+    is_schedule = screenings[0].alert_type == "schedule"
+    title = "CGV 상영 오픈" if is_schedule else "CGV 빈자리 변경"
+    lines = [
+        f"{item.date} {item.time} | {item.theater} | {item.screen} | {item.movie}"
+        for item in screenings
+    ]
+    response = requests.post(
+        settings.ntfy_topic_url,
+        data="\n".join(lines).encode("utf-8"),
+        headers={
+            "Title": title,
+            "Priority": "urgent",
+            "Tags": "cinema",
+            "Click": screenings[0].booking_url,
+        },
+        timeout=settings.timeout_seconds,
+    )
+    response.raise_for_status()

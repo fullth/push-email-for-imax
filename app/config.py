@@ -34,6 +34,7 @@ class Settings:
     mail_from: str
     mail_to: str
     mail_subject_prefix: str
+    ntfy_topic_url: str
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -53,4 +54,5 @@ class Settings:
             mail_from=os.environ["MAIL_FROM"],
             mail_to=os.environ["MAIL_TO"],
             mail_subject_prefix=os.getenv("MAIL_SUBJECT_PREFIX", "[CGV 예매 오픈]"),
+            ntfy_topic_url=os.getenv("NTFY_TOPIC_URL", ""),
         )
