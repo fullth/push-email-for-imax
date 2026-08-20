@@ -4,6 +4,7 @@ import logging
 from collections import defaultdict
 from dataclasses import replace
 from datetime import date, datetime, timedelta
+from urllib.parse import urlencode
 
 import requests
 
@@ -109,6 +110,18 @@ def _matching_seats(seats, minimum_row: str, maximum_row: str, consecutive: int)
     return matches
 
 
+def _booking_url(item: dict, site_no: str) -> str:
+    params = {
+        "movNo": item.get("movNo", ""),
+        "siteNo": site_no,
+        "scnYmd": item.get("scnYmd", ""),
+        "scnsNo": item.get("scnsNo", ""),
+        "scnSseq": item.get("scnSseq", ""),
+        "prodNo": item.get("prodNo", ""),
+    }
+    return "https://cgv.co.kr/cnm/movieBook/movie?" + urlencode(params)
+
+
 def _subscriptions() -> list[dict]:
     token = os.environ["GH_TOKEN"]
     repo = os.environ["GITHUB_REPOSITORY"]
@@ -177,7 +190,7 @@ def main() -> None:
                     theater=item.get("siteNm", subscription["theater"]), screen=item.get("scnsNm", subscription["screen"]),
                     movie=item.get("expoProdNm", subscription["movie"]), date=item["scnYmd"], time=start,
                     source_key=f"{subscription['issue']}|{item['scnsNo']}|{item['scnSseq']}|{state_key}",
-                    seats=seats, booking_url="https://cgv.co.kr/cnm/movieBook/movie",
+                    seats=seats, booking_url=_booking_url(item, site_no),
                     alert_type="seat" if matches else "schedule",
                 )
                 pending.append((subscription["email"], screening))
