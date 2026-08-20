@@ -188,6 +188,7 @@ def main() -> None:
         settings = Settings.from_env()
         new_keys = {screening.key for screening in new}
         recipients: dict[tuple[str, str], list[Screening]] = defaultdict(list)
+        delivered = False
         for email, screening in pending:
             if screening.key in new_keys:
                 recipients[(email, screening.alert_type)].append(screening)
@@ -195,14 +196,19 @@ def main() -> None:
             recipient_settings = replace(settings, mail_to=email)
             try:
                 send_ntfy(recipient_settings, recipient_screenings)
+                delivered = True
             except Exception:
                 LOGGER.exception("ntfy notification failed")
             try:
                 send_screenings(recipient_settings, recipient_screenings)
+                delivered = True
             except Exception:
                 # Railway may restrict outbound SMTP; keep ntfy as the primary
                 # alert channel and do not lose the state transition.
                 LOGGER.exception("email notification failed")
+        if new and not delivered:
+            LOGGER.warning("no notification channel succeeded; retaining state for retry")
+            return
     # Do not mark seats as notified until every recipient's email succeeds.
     # A transient SMTP failure must be retried on the next workflow run.
     state.save(screenings)
