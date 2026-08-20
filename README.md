@@ -6,7 +6,7 @@ CGV 상영 일정과 빈 좌석을 확인해 이메일로 알려주는 서비스
 
 ## 알림 신청
 
-[좌석 알림 신청하기](https://github.com/fullth/push-email-for-imax/issues/new?template=seat-alert.md)
+[좌석 알림 신청하기](https://github.com/fullth/push-email-for-imax/issues/new?template=seat-alert.yml)
 
 신청 양식에 다음 정보를 입력해주세요.
 
